@@ -32,7 +32,7 @@ reference
 """
 def openFile():
 
-    file = open('raw_history_html_first_7_pages', 'r')
+    file = open('raw_bookmarks', 'r')
     lst = file.readlines()
     file.close()
 
@@ -44,52 +44,116 @@ def openFile():
     return lines
 
 
-def createFicList(lst):
+def createFicList(lst,source):
     
     fics=list()
     fic=list()
 
-    for line in lst:
-        line = line.strip()
-        if line == '':
-            continue
-        if line == '<a href="/works/new">Post</a>':
-            continue
-        if line == '<!--title, author, fandom-->':
-            #create new list to hold fic info
-            fic=list()
-        #add all the info to the fic string
-        fic.append(line)
+    if source == 'History':
+        for line in lst:
+            line = line.strip()
+            if line == '':
+                continue
+            if line == '<a href="/works/new">Post</a>':
+                continue
+            if line == '<!--title, author, fandom-->':
+                #create new list to hold fic info
+                fic=list()
+            #add all the info to the fic string
+            fic.append(line)
 
-        #stop the string and add it to the list
-        if 'role=\"article\">' in line:
-            fics.append(fic)
-            #print(fic)
+            #stop the string and add it to the list
+            if 'role=\"article\">' in line:
+                fics.append(fic)
+                #print(fic)
+                
+    if source == 'Bookmarks':
+        for line in lst:
+            line = line.strip()
+            if line == '':
+                continue
+            if line == '<a href="/works/new">Post</a>':
+                continue
+            if line == '<!--bookmark icons-->':
+                #create new list to hold fic info
+                fic=list()
+            #add all the info to the fic string
+            fic.append(line)
+
+            #stop the string and add it to the list
+            if line == '<!--navigation and actions-->':
+                fics.append(fic)
+                #print(fic)
 
     return fics
 
 def findLines(fic,source):
-    giftees=['None']
+
+    
+    giftees=['']
     lockedStatus='Unlocked'
-    collections='0'
-    series='None'
-    comments='0'
-    bookmarks='0'
-    summary='None'
-    kudos='0'
+    #rating='N/A'
+    #warnings='N/A'
+    #categories='N/A'
+    #wip='N/A'
+    collections=''
+    series=''
+    comments=''
+    bookmarks=''
+    summary=''
+    wordCount=''
+    kudos=''
+    works=''
+    language=''
+    chaptersWritten=''
+    chaptersTotal=''
+    hits=''
     
     lineNumber = 0
+    summaryFound = 'No'
+    isSeries = 'No'
+    isExternal = 'No'
+    
     for line in fic:
-        line=line.replace('|','/')
+
 
         
         #get lines
-        if line.startswith('<a href=\"/works/') == True:
-            title, worknumber=getTitleInfo(fic[lineNumber])
-            print(line)
+        if line == '<!--title etc-->':
+            isSeries = 'Yes'
+
+        if isSeries == 'Yes':
+            if line.startswith('<a href="/series/') == True:
+                title, worknumber=getTitleInfo(fic[lineNumber],17)
+                #print(line)
+            if line == '<dt>Words:</dt>':
+                words=fic[lineNumber+1]
+                wordCount=words[4:-6]
+                #print(wordCount)
+            if line == '<dt>Works:</dt>':
+                workLine=fic[lineNumber+1]
+                works=workLine[4:-6]
+                #print(works)
             
-        if line.startswith('<a rel="author" href="') == True:
-            authors=makeSectionList(fic[lineNumber])
+        if line == '<ul class="required-tags">':
+            tagsSection=fic[lineNumber-1:lineNumber+13]
+            rating, warnings, categories, wip, pubDate, relationships, characters, freeformTags = getTags(tagsSection)
+
+        if line.startswith('<a href="/external_works/') == True:
+            title, worknumber=getTitleInfo(fic[lineNumber],25)
+            isExternal = 'Yes'
+            #print(line)
+            
+        if line.startswith('<a href=\"/works/') == True:
+            title, worknumber=getTitleInfo(fic[lineNumber],16)
+            #print(line)
+            
+        if line == 'by':
+            if isExternal == 'No':
+                authors=makeSectionList(fic[lineNumber+2])
+            if isExternal == 'Yes':
+                authors=fic[lineNumber+1]
+            #print(authors)
 
         if line.startswith('for <a href="') == True:
             giftees=makeSectionList(fic[lineNumber])
@@ -97,18 +161,22 @@ def findLines(fic,source):
         if line == '<img alt="(Restricted)" title="Restricted" src="/images/lockblue.png" width="15" height="15"/>':
             lockedStatus='Locked'
             
-        if line.startswith('<span class="landmark">Fandoms:</span>')==True:
+        if line.startswith('<span class="landmark">Fandom')==True:
             fandoms = makeSectionList(fic[lineNumber + 1])
 
         if line == '<!--required tags-->':
             tagsSection=fic[lineNumber:lineNumber+13]
             rating, warnings, categories, wip, pubDate, relationships, characters, freeformTags = getTags(tagsSection)
 
-        if line == '<blockquote class="userstuff summary">':
-            summaryStart=lineNumber
+        if line == '<!--summary-->':
+            summaryStart=lineNumber+2
 
         if line == '</blockquote>':
-            summary=getSummary(fic[summaryStart+1:lineNumber])
+            if summaryFound == 'No':
+                
+                summary=getSummary(fic[summaryStart+1:lineNumber])
+                summaryFound = 'Yes'
+
 
         if line == '<h6 class="landmark heading">Series</h6>':
             series=pullText(fic[lineNumber+3],4)
@@ -141,6 +209,11 @@ def findLines(fic,source):
         if line.startswith('<dd class="bookmarks">') == True:
             bookmarks=pullText(line[22:],9)
 
+        if line == '<dt>Bookmarks:</dt>':
+            bookmarkLine=fic[lineNumber+1]
+            bookmarks=pullText(bookmarkLine,9)
+            #print(bookmarks)
+
         if line.startswith('<dd class="hits">') == True:
             hits=pullText(line,5)
 
@@ -150,10 +223,26 @@ def findLines(fic,source):
                 updateStatus=getUpdateStatus(fic[lineNumber+1])
                 visitCount=getVisitCount(fic[lineNumber+2])
 
+        if source == 'Bookmarks':
+            if line == '<!--bookmark icons-->':
+                bookmarkType=getBookmarkType(fic[lineNumber+2])
+            if line == '<!--bookmarker, time-->':
+                bookmarkDate=pullText(fic[lineNumber+4],4)                
+            if line == '<!--meta-->':
+                bookmarkTagsStart=lineNumber
+            if line == '<!--notes-->':
+                bookmarkSection=fic[bookmarkTagsStart+3:lineNumber-1]
+                bookmarkTags=getBookmarkTags(bookmarkSection)
+                notesStart=lineNumber
+            if line == '<!--navigation and actions-->':
+                notes=getNotes(fic[notesStart+2:lineNumber-1])
+                
+
         lineNumber += 1     
     
     
-    ficData=[title,
+    if source == 'History':
+        ficData=[title,
               worknumber,
               authors,
               giftees,
@@ -169,6 +258,7 @@ def findLines(fic,source):
               freeformTags,
               summary,
               series,
+              works,
               language,
               wordCount,
               chaptersWritten,
@@ -181,6 +271,37 @@ def findLines(fic,source):
               visitedDate,
               updateStatus,
               visitCount]
+    if source == 'Bookmarks':
+        ficData=[title,
+              worknumber,
+              authors,
+              giftees,
+              lockedStatus,
+              fandoms,
+              rating,
+              warnings,
+              categories,
+              wip,
+              pubDate,
+              relationships,
+              characters,
+              freeformTags,
+              summary,
+              series,
+              works,
+              language,
+              wordCount,
+              chaptersWritten,
+              chaptersTotal,
+              collections,
+              comments,
+              kudos,
+              bookmarks,
+              hits,
+              bookmarkType,
+              bookmarkDate,   
+              bookmarkTags,
+              notes]
 
     
     #print('print lines: ',*ficData,sep='\n')
@@ -191,14 +312,14 @@ def pullText(section,number):
     text=section[start:-number]
     return text
 
-def pullTextFromTags(section):
+def pullTextFromTags(section,number):
     start=section.find('text">')+6
-    text=section[start:-23]
+    text=section[start:-number]
     return text
 
-def getTitleInfo(titleSection):
+def getTitleInfo(titleSection,number):
     endNumber=titleSection.find('\">')
-    worknumber=titleSection[16:endNumber]
+    worknumber=titleSection[number:endNumber]
     title=pullText(titleSection,4)
     return title, worknumber
 
@@ -231,12 +352,12 @@ def pullTags(section):
     return relationships,characters,freeformTags
         
 def getTags(tagsSection):
-    rating=pullTextFromTags(tagsSection[2])
-    warningString=pullTextFromTags(tagsSection[3])
+    rating=pullTextFromTags(tagsSection[2],23)
+    warningString=pullTextFromTags(tagsSection[3],23)
     warnings=warningString.split(', ')
-    categoryString=pullTextFromTags(tagsSection[4])
+    categoryString=pullTextFromTags(tagsSection[4],23)
     categories=categoryString.split(', ')
-    wip=pullTextFromTags(tagsSection[5])
+    wip=pullTextFromTags(tagsSection[5],23)
     pubDate=pullText(tagsSection[7],4)
     relationships,characters,freeformTags=pullTags(tagsSection[12])
     return rating, warnings, categories, wip, pubDate, relationships, characters, freeformTags
@@ -249,6 +370,7 @@ def getSummary(section):
     summary=summary.replace('</em>','')
     summary=summary.replace('<strong>','')
     summary=summary.replace('</strong>','')
+    summary=summary.replace('<br/>','')
     summary=summary.strip()
     return summary
 
@@ -265,6 +387,28 @@ def getVisitCount(section):
         visitCount=section[8:-6]
     return visitCount
 
+def getBookmarkType(section):
+    bookmarkType=pullTextFromTags(section,18)
+    return bookmarkType
+
+def getBookmarkTags(section):
+    tags=[]
+    for line in section:
+        tag=pullText(line,9)
+        tags.append(tag)
+    return tags
+
+def getNotes(section):
+    notes=' '.join(section)
+    notes=notes.replace('<p>','')
+    notes=notes.replace('</p>',' ')
+    notes=notes.replace('<em>','')
+    notes=notes.replace('</em>','')
+    notes=notes.replace('<strong>','')
+    notes=notes.replace('</strong>','')
+    notes=notes.strip()
+    return notes
+
 def makeStringList(ficData):
     dataStringList=[]
     
@@ -279,9 +423,12 @@ def makeStringList(ficData):
     return dataStringList
                 
 
-def analyze(allData):
+def exportAll(allData,source):
     f = open('allData.txt','w')
-    f.write('title|worknumber|authors|giftees|lockedStatus|fandoms|rating|warnings|categories|wip|pubDate|relationships|characters|freeformTags|summary|series|language|wordCount|chaptersWritten|chaptersTotal|collections|comments|kudos|bookmarks|hits|visitedDate|updateStatus|visitCount')
+    if source == 'History':
+        f.write('title|worknumber|authors|giftees|lockedStatus|fandoms|rating|warnings|categories|wip|pubDate|relationships|characters|freeformTags|summary|series|works|language|wordCount|chaptersWritten|chaptersTotal|collections|comments|kudos|bookmarks|hits|visitedDate|updateStatus|visitCount')
+    if source == 'Bookmarks':
+      f.write('title|worknumber|authors|giftees|lockedStatus|fandoms|rating|warnings|categories|wip|pubDate|relationships|characters|freeformTags|summary|series|works|language|wordCount|chaptersWritten|chaptersTotal|collections|comments|kudos|bookmarks|hits|bookmarkType|bookmarkDate|bookmarkTags|notes')  
     f.write('\n')
     for line in allData:
         lineString='|'.join(line)
@@ -293,8 +440,9 @@ def main():
 
 
     lst=openFile()
-    fics=createFicList(lst)
-    source='History'
+    source='Bookmarks'
+    fics=createFicList(lst,source)
+    
 
     print('start of fic 1')
 
@@ -313,7 +461,7 @@ def main():
         ficDataStringList=makeStringList(ficData)
         allData.append(ficDataStringList)
 
-    analyze(allData)
+    exportAll(allData,source)
 
     
 main()
