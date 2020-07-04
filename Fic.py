@@ -301,7 +301,7 @@ class Fic:
             if "(" in self.visitInfo:
                 visitCount_data = self.visitInfo.split("(")[0][:-5]
             else:
-                visitCount_data = self.visitInfo[:-5]
+                visitCount_data = self.visitInfo[:-6]
         return visitCount_data
     
     @property
