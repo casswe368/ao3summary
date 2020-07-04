@@ -7,7 +7,7 @@ Rewritten to include classes
 from Fic import Fic
 
 def openFile():
-    file = open('testHistory.txt', 'r', encoding='utf-8')
+    file = open('HistoryHTMLTEST.txt', 'r', encoding='utf-8')
     lst = file.readlines()
     file.close()
     
@@ -191,6 +191,7 @@ def main():
     
     fics=createFicList(lst,source)
     exportAll(fics, source)
+    #exportPrimary(fics, source)
     
 
     
