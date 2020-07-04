@@ -31,7 +31,7 @@ def allHistory():
             'user[login]': username,
             'user[password]': password,
         })
-    f = open('HistoryHTMLTEST.txt', 'a+', encoding='utf-8')
+    f = open('HistoryHTMLTEST.txt', 'w', encoding='utf-8')
     for i in range(1,494):
         url='https://archiveofourown.org/users/gunpowderandlove/readings?page={}'.format(i)
         req = sess.get(url)
