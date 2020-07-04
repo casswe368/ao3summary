@@ -3,3 +3,4 @@ HistoryHTMLTEST.txt
 allData.txt
 cred.py
 __pycache__
+*.txt
