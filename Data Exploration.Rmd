@@ -7,13 +7,15 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 #tidyverse for organizing the data, industry standard for data organization
+#make sure you have LaTeX installed to knit to PDF
+#if using windows you can install it by running tinytex::install_tinytex() in the console
 ```
 
 
 
 ```{r}
 #import data
-primary <- read_delim('primary.txt', delim = '|', quote="", col_types = cols(
+primary <- read_delim('primary.txt', delim = '|', quote="", na="?", col_types = cols(
   worknumber=col_integer(),
   pubDate=col_date(format = "%d %b %Y"),
   summary=col_character(),
@@ -28,13 +30,20 @@ primary <- read_delim('primary.txt', delim = '|', quote="", col_types = cols(
   visitedDate=col_date(format = "%d %b %Y"),
   visitCount=col_number()
 ))
-summary(primary)
-head(primary)
+
+
+authors <- read_delim('authors.txt', delim = '|', col_types = cols(
+  worknumber=col_integer()
+))
 
 ```
 
 
 ```{r, echo=FALSE}
-filter(primary, is.na(summary))
+#view summary of data
+summary(primary)
+head(primary)
+summary(authors)
+head(authors)
 ```
 
