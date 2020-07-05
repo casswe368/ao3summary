@@ -32,8 +32,9 @@ class Fic:
         authors_data = []
         for item in self.soup.h4.find_all('a', rel='author'):
             authors_data.append(item.text)
-        return authors_data
-        #TODO: Anonymous author        
+        if authors_data == []:
+            authors_data = ['Anonymous']
+        return authors_data       
         
     @property
     def giftees(self):
