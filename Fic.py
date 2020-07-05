@@ -296,7 +296,7 @@ class Fic:
         #The number of times the user has viewed the work
         #Visited once
         #Visited 2 times
-        if self.visitInfo == 'once':
+        if 'once' in  self.visitInfo:
             visitCount_data = '1'
         else:
             if "(" in self.visitInfo:
