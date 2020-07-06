@@ -46,4 +46,20 @@ head(primary)
 summary(authors)
 head(authors)
 ```
+```{r, echo=FALSE}
+#find top author by number of works view
+topAuthorsWorks <- authors %>%
+  group_by(authors) %>%
+  summarise(numWorks = n()) %>%
+  arrange(desc(numWorks))
 
+
+#find top author by total visit count
+topAuthorsCount <- left_join(authors, primary, by = 'worknumber') %>%
+  group_by(authors) %>%
+  summarise(numVisits = sum(visitCount)) %>%
+  arrange(desc(numVisits))
+
+head(topAuthorsCount, 25)
+
+```

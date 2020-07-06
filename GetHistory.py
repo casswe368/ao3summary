@@ -32,10 +32,12 @@ def allHistory():
             'user[password]': password,
         })
     f = open('HistoryHTMLTEST.txt', 'w', encoding='utf-8')
-    for i in range(1,494):
+    for i in range(1,495):
         url='https://archiveofourown.org/users/gunpowderandlove/readings?page={}'.format(i)
         req = sess.get(url)
         html=req.text
+        if html=='Retry later':
+            print('Retry later')
         f.write(html)
         time.sleep(1+random.random())
     f.close()

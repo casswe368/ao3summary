@@ -12,7 +12,10 @@ class Fic:
         #Title
         #Required field
         #<a href="/works/111111">Title</a>
-        title_data = self.soup.h4.a.text
+        try:
+            title_data = self.soup.h4.a.text
+        except:
+            title_data=''
         return title_data
         
     @property
@@ -20,7 +23,10 @@ class Fic:
         #Work Number
         #Required field
         #<a href="/works/111111">Title</a>
-        worknumber_data=self.soup.h4.a['href'][7:]
+        try:
+            worknumber_data=self.soup.h4.a['href'][7:]
+        except:
+            worknumber_data=''
         return worknumber_data
            
     @property
@@ -34,6 +40,8 @@ class Fic:
             authors_data.append(item.text)
         if authors_data == []:
             authors_data = ['Anonymous']
+        if self.deleted == 'Y':
+            authors_data = []
         return authors_data       
         
     @property
@@ -66,8 +74,11 @@ class Fic:
         #   &nbsp;
         #</h5>
         fandoms_data = []
-        for item in self.soup.h5.find_all('a', class_='tag'):
-            fandoms_data.append(item.text)
+        try:
+            for item in self.soup.h5.find_all('a', class_='tag'):
+                fandoms_data.append(item.text)
+        except:
+            pass
         return fandoms_data     
     
     @property
@@ -79,14 +90,21 @@ class Fic:
         #   <li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="category-multi category" title="F/F, Gen"><span class="text">F/F, Gen</span></span></a></li>
         #   <li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="complete-no iswip" title="Work in Progress"><span class="text">Work in Progress</span></span></a></li>
         #</ul>
-        requiredTags_data=self.soup.find('ul', class_='required-tags').find_all('span', class_='text')
+        try:
+            requiredTags_data=self.soup.find('ul', class_='required-tags').find_all('span', class_='text')
+        except:
+            requiredTags_data=[]
         return requiredTags_data
     
     @property
     def rating(self):
         #Rating: General Audiences through Explicit
         #<li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="rating-teen rating" title="Teen And Up Audiences"><span class="text">Teen And Up Audiences</span></span></a></li>
-        return self.requiredTags[0].text
+        try:
+            rating_data=self.requiredTags[0].text
+        except:
+            rating_data=''
+        return rating_data
     
     @property
     def warnings(self):
@@ -95,7 +113,11 @@ class Fic:
         #If no warnings are selected, warning category will be "No Archive Warnings Apply"
         #<li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="warning-no warnings" title="No Archive Warnings Apply"><span class="text">No Archive Warnings Apply</span></span></a></li>
         #<li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="warning-yes warnings" title="Graphic Depictions Of Violence, Rape/Non-Con"><span class="text">Graphic Depictions Of Violence, Rape/Non-Con</span></span></a></li>
-        return self.requiredTags[1].text.split(', ')
+        try:
+            warnings_data=self.requiredTags[1].text.split(', ')
+        except:
+            warnings_data=[]
+        return warnings_data
     
     @property
     def categories(self):
@@ -103,19 +125,31 @@ class Fic:
         #Can have multiple categories
         #<li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="category-gen category" title="Gen"><span class="text">Gen</span></span></a></li>
         #<li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="category-multi category" title="F/M, M/M"><span class="text">F/M, M/M</span></span></a></li>
-        return self.requiredTags[2].text.split(', ')
+        try:
+            categories_data=self.requiredTags[2].text.split(', ')
+        except:
+            categories_data=[]
+        return categories_data
     
     @property
     def wip(self):
         #Is the work complete or a work in progress?
         #<li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="complete-no iswip" title="Work in Progress"><span class="text">Work in Progress</span></span></a></li>
-        return self.requiredTags[3].text
+        try:
+            wip_data=self.requiredTags[3].text
+        except:
+            wip_data=''
+        return wip_data
     
     @property
     def pubDate(self):
         #Date latest update was published
         #<p class="datetime">09 Dec 2015</p>
-        return self.soup.find('p', class_='datetime').text
+        try:
+            pubDate_data=self.soup.find('p', class_='datetime').text
+        except:
+            pubDate_data=''
+        return pubDate_data
     
     @property
     def relationships(self):
@@ -182,13 +216,22 @@ class Fic:
     def language(self):
         #Language the work is written in
         #<dd class="language">English</dd>
-        return self.soup.find('dd', class_='language').text
+        try:
+            language_data=self.soup.find('dd', class_='language').text
+        except:
+            language_data=''
+        return language_data
+            
         
     @property
     def wordCount(self):
         #Word Count of the work
         #<dd class="words">14,313</dd>
-        return self.soup.find('dd', class_='words').text
+        try:
+            wordCount_data=self.soup.find('dd', class_='words').text
+        except:
+            wordCount_data=''
+        return wordCount_data
 
     @property
     def chaptersWritten(self):
@@ -196,7 +239,11 @@ class Fic:
         #<dd class="chapters">2/?</dd>
         #<dd class="chapters">6/6</dd>
         #<dd class="chapters">1/1</dd>
-        return self.soup.find('dd', class_='chapters').text.split('/')[0]
+        try:
+            chaptersWritten_data=self.soup.find('dd', class_='chapters').text.split('/')[0]
+        except:
+            chaptersWritten_data=''
+        return chaptersWritten_data            
 
     @property
     def chaptersTotal(self):
@@ -204,7 +251,11 @@ class Fic:
         #<dd class="chapters">2/?</dd>
         #<dd class="chapters">6/6</dd>
         #<dd class="chapters">1/1</dd>
-        return self.soup.find('dd', class_='chapters').text.split('/')[1]
+        try:
+            chaptersTotal_data=self.soup.find('dd', class_='chapters').text.split('/')[1]
+        except:
+            chaptersTotal_data=''
+        return chaptersTotal_data 
 
     @property
     def collections(self):
@@ -250,7 +301,10 @@ class Fic:
     def hits(self):
         #Number of hits on the work
         #<dd class="hits">32523</dd>
-        return self.soup.find('dd', class_='hits').text
+        hits_data = '0'
+        if self.soup.find('dd', class_='bookmarks') != None:
+            hits_data=self.soup.find('dd', class_='hits').text
+        return hits_data
 
     @property
     def historyInfo(self):
@@ -261,14 +315,21 @@ class Fic:
         #       Visited 11 times
         #       (Marked for Later.)
         #</h4>
-        historyInfo_data=self.soup.find('h4', class_='viewed heading').span.next_sibling
+        try:
+            historyInfo_data=self.soup.find('h4', class_='viewed heading').span.next_sibling
+        except:
+            historyInfo_data=''
         return historyInfo_data
 
     @property
     def visitedDate(self):
         #Last Date the work was viewed by the user
         #<span>Last visited:</span> 05 Nov 2019
-        return self.historyInfo.split('(')[0].strip()
+        if self.deleted == 'Y':
+            visitedDate_data=self.soup.h4.text[-12:-1]
+        else:
+            visitedDate_data=self.historyInfo.split('(')[0].strip()
+        return visitedDate_data
     
     @property
     def updateStatus(self):
@@ -276,9 +337,13 @@ class Fic:
         #(Latest version.)
         #(Minor edits made since then.)
         #(Update available.)
-        statusStart = self.historyInfo.find('(')+1
-        statusEnd = self.historyInfo.find(')')-1
-        return self.historyInfo[statusStart:statusEnd]
+        if self.historyInfo=='':
+            updateStatus_data=''
+        else:
+            statusStart = self.historyInfo.find('(')+1
+            statusEnd = self.historyInfo.find(')')-1
+            updateStatus_data=self.historyInfo[statusStart:statusEnd]
+        return updateStatus_data
     
     @property
     def visitInfo(self):
@@ -289,20 +354,27 @@ class Fic:
         #       Visited 11 times
         #       (Marked for Later.)
         #</h4>
-        return self.historyInfo.split('Visited ')[1]       
+        if self.historyInfo=='':
+            visitInfo_data=''
+        else:
+            visitInfo_data=self.historyInfo.split('Visited ')[1] 
+        return visitInfo_data      
     
     @property
     def visitCount(self):
         #The number of times the user has viewed the work
         #Visited once
         #Visited 2 times
-        if 'once' in  self.visitInfo:
-            visitCount_data = '1'
+        if self.historyInfo=='':
+            visitCount_data=''
         else:
-            if "(" in self.visitInfo:
-                visitCount_data = self.visitInfo.split("(")[0][:-5]
+            if 'once' in  self.visitInfo:
+                visitCount_data = '1'
             else:
-                visitCount_data = self.visitInfo[:-6]
+                if "(" in self.visitInfo:
+                    visitCount_data = self.visitInfo.split("(")[0][:-5]
+                else:
+                    visitCount_data = self.visitInfo[:-6]
         return visitCount_data
     
     @property
@@ -313,18 +385,28 @@ class Fic:
         later_data='N'
         if "(" in self.visitInfo:
             later_data='Y'
-        return later_data    
+        return later_data
+
+    @property
+    def deleted(self):
+        #Is this a deleted work?
+        #<li class="deleted reading work blurb group" role="article">
+        #(Deleted work, last visited 26 Nov 2019)
+        deleted_data='N'
+        if self.soup.find('li', class_="deleted reading work blurb group") != None:
+            deleted_data='Y'
+        return deleted_data    
 
 
         
     
 # =============================================================================
-# For Testing
+# #For Testing
 #       
 # def main():
 # 
-# 
-#     file = open('sampleFic.txt', 'r', encoding='utf-8')
+#     """
+#     file = open('sampleDeletedFic.txt', 'r', encoding='utf-8')
 #     lst = file.readlines()
 #     file.close()
 #     
@@ -335,18 +417,34 @@ class Fic:
 #         if line == '':
 #             continue
 #         lines+=line
-#         #print(line)
+#         print(line)
 #         
-#     print(lines)
+#     print(lines)"""
+#     
 #     
 #     sampleFic="""<!--title, author, fandom--><div class="header module"><h4 class="heading"><a href="/works/111111">This is a Title</a>by<!-- do not cache --><a rel="author" href="/users/username1/pseuds/username1">Username1</a>for <a href="/users/username2/gifts">Username2</a></h4><h5 class="fandoms heading"><span class="landmark">Fandoms:</span><a class="tag" href="/tags/Community/works">Community</a>&nbsp;</h5><!--required tags--><ul class="required-tags"><li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="rating-general-audience rating" title="General Audiences"><span class="text">General Audiences</span></span></a></li><li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="warning-no warnings" title="No Archive Warnings Apply"><span class="text">No Archive Warnings Apply</span></span></a></li><li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="category-slash category" title="M/M"><span class="text">M/M</span></span></a></li><li> <a class="help symbol question modal" title="Symbols key" aria-controls="#modal" href="/help/symbols-key.html"><span class="complete-yes iswip" title="Complete Work"><span class="text">Complete Work</span></span></a></li></ul><p class="datetime">01 Jan 1951</p></div><!--warnings again, cast, freeform tags--><h6 class="landmark heading">Tags</h6><ul class="tags commas"><li class='warnings'><strong><a class="tag" href="/tags/No%20Archive%20Warnings%20Apply/works">No Archive Warnings Apply</a></strong></li><li class='relationships'><a class="tag" href="/tags/Troy%20Barnes*s*Abed%20Nadir/works">Troy Barnes/Abed Nadir</a></li><li class='characters'><a class="tag" href="/tags/Troy%20Barnes/works">Troy Barnes</a></li> <li class='characters'><a class="tag" href="/tags/Abed%20Nadir/works">Abed Nadir</a></li> <li class='characters'><a class="tag" href="/tags/Annie%20Edison/works">Annie Edison</a></li> <li class='characters'><a class="tag" href="/tags/Jeff%20Winger/works">Jeff Winger</a></li> <li class='characters'><a class="tag" href="/tags/Pierce%20Hawthorne/works">Pierce Hawthorne</a></li> <li class='characters'><a class="tag" href="/tags/Shirley%20Bennett/works">Shirley Bennett</a></li> <li class='characters'><a class="tag" href="/tags/Britta%20Perry/works">Britta Perry</a></li><li class='freeforms'><a class="tag" href="/tags/Chromatic%20Yuletide/works">Chromatic Yuletide</a></li></ul><!--summary--><h6 class="landmark heading">Summary</h6><blockquote class="userstuff summary"><p>This is a summary of the work</p></blockquote><!--stats--><dl class="stats"><dt class="language">Language:</dt><dd class="language">English</dd><dt class="words">Words:</dt><dd class="words">6,166</dd><dt class="chapters">Chapters:</dt><dd class="chapters">1/1</dd><dt class="collections">Collections:</dt><dd class="collections"><a href="/works/302238/collections">1</a></dd><dt class="comments">Comments:</dt><dd class="comments"><a href="/works/111111?show_comments=true#comments">365</a></dd><dt class="kudos">Kudos:</dt><dd class="kudos"><a href="/works/111111#comments">999</a></dd><dt class="bookmarks">Bookmarks:</dt><dd class="bookmarks"><a href="/works/111111/bookmarks">1951</a></dd><dt class="hits">Hits:</dt><dd class="hits">12345</dd></dl><div class="user module group"><h4 class="viewed heading"><span>Last visited:</span> 25 May 2020(Latest version.)Visited once</h4><ul class="actions" role="menu"><li>"""
+#     sampleDeletedFic="""<li class="deleted reading work blurb group" role="article"><div class="user module group"><h4 class="viewed heading">(Deleted work, last visited 26 Nov 2019)</h4><ul class="actions" role="menu"><li><li class="deleted reading work blurb group" role="article"><div class="user module group"><h4 class="viewed heading">(Deleted work, last visited 26 Nov 2019)</h4><ul class="actions" role="menu"><li>"""
 #     fic=Fic(sampleFic)
+#     delfic=Fic(sampleDeletedFic)
+# 
+#     
+#     
 #     print(fic.title, fic.worknumber, fic.authors, fic.giftees, fic.lockedStatus, fic.fandoms, fic.requiredTags)
 #     print(fic.rating, fic.warnings, fic.categories, fic.wip, fic.pubDate)
 #     print(fic.relationships, fic.characters, fic.freeformTags)
 #     print(fic.summary, fic.series, fic.language, fic.wordCount, fic.chaptersWritten, fic.chaptersTotal)
 #     print(fic.collections, fic.comments, fic.kudos, fic.bookmarks, fic.hits)
-#     print(fic.visitedDate, fic.updateStatus, fic.visitCount, fic.later)
+#     print(fic.visitedDate, fic.updateStatus, fic.visitCount, fic.later,fic.deleted)
+# 
+# 
 #     
-# #main()
+#     print(delfic.title, delfic.worknumber, delfic.authors, delfic.giftees, delfic.lockedStatus, delfic.fandoms, delfic.requiredTags)
+#     print(delfic.rating, delfic.warnings, delfic.categories, delfic.wip, delfic.pubDate)
+#     print(delfic.relationships, delfic.characters, delfic.freeformTags)
+#     print(delfic.summary, delfic.series, delfic.language, delfic.wordCount, delfic.chaptersWritten, delfic.chaptersTotal)
+#     print(delfic.collections, delfic.comments, delfic.kudos, delfic.bookmarks, delfic.hits)
+#     print(delfic.visitedDate, delfic.updateStatus, delfic.visitCount, delfic.later,delfic.deleted)
+# 
+#     
+# main()
 # =============================================================================

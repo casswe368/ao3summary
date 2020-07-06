@@ -34,6 +34,8 @@ def createFicList(lst,source):
             if line == '<!--title, author, fandom-->':
                 #create new list to hold fic info
                 ficText=''
+            if line == '<li class="deleted reading work blurb group" role="article">':
+                ficText=''
             #add all the info to the fic string
             ficText+=line
             
@@ -134,7 +136,7 @@ def exportTogether(fics,source):
 
 def exportPrimary(fics,source):
     f = open('primary.txt','w', encoding='utf-8')
-    f.write('title|worknumber|lockedStatus|rating|wip|pubDate|summary|series|language|wordCount|chaptersWritten|chaptersTotal|collections|comments|kudos|bookmarks|hits|visitedDate|updateStatus|visitCount|later')
+    f.write('title|worknumber|lockedStatus|rating|wip|pubDate|summary|series|language|wordCount|chaptersWritten|chaptersTotal|collections|comments|kudos|bookmarks|hits|visitedDate|updateStatus|visitCount|later|deleted')
     f.write('\n')
     for fic in fics:
         ficData=[fic.title,
@@ -157,7 +159,8 @@ def exportPrimary(fics,source):
               fic.visitedDate,
               fic.updateStatus,
               fic.visitCount,
-              fic.later]
+              fic.later,
+              fic.deleted]
         f.write('|'.join(ficData))
         f.write('\n')
     f.close()
