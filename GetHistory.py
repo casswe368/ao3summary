@@ -36,8 +36,10 @@ def allHistory():
         url='https://archiveofourown.org/users/gunpowderandlove/readings?page={}'.format(i)
         req = sess.get(url)
         html=req.text
-        if html=='Retry later':
-            print('Retry later')
+        while 'Retry later' in html:
+            time.sleep(10+random.random())
+            req = sess.get(url)
+            html=req.text
         f.write(html)
         time.sleep(1+random.random())
     f.close()
